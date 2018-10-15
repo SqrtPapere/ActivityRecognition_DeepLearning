@@ -1,6 +1,3 @@
-# ActivityRecognition_DeepLearning
-Activity Recognition for health care using deep learning techniques.
-
 # Repo organization
 
 No code in this repo is ready-to-run as it is. This is because there is no dataset in the repo yet.
