@@ -178,8 +178,7 @@ prox_out = (prox_input)
 time_out = (time_input)
 
 x = LSTM(50)(sensor_input)
-x = BatchNormalization()(x)
-
+ 
 # x = Conv1D(25, 5, padding="valid", activation='relu')(sensor_input)
 # x = MaxPooling1D(pool_size=2)(x)
 # #x = Dropout(0.3)(x)
