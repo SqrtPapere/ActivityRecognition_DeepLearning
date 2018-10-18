@@ -38,3 +38,4 @@
 	
 		`data, label, sensors = dataset.get_dataset(directory, window, True, False)`
 
+- To run the code: `python3 multi_input_lstm.py`
