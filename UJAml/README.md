@@ -4,11 +4,20 @@
 
 - Download the dataset at http://ceatic.ujaen.es/ujami/sites/default/files/2018-07/UCAmI%20Cup.zip
 
-- Unzip and copy UCAml Cup -> Data in the UJAml folder of the repo
+- Unzip and copy UCAml Cup -> **Data** in **UJAml** folder of the repo
 
-- Open file at Data->Training->2017-11-20->2017-11-20-C->2017-11-20-C-sensors.csv with any text editor and change the header:
- 
-   DATE->TIMESTAMP
+- There is an error in a header, so: open file at Data->Training->2017-11-20->2017-11-20-C->**2017-11-20-C-sensors.csv** with any text editor and change the header:
+
+ *DATE* | OBJECT | STATE | HABITANT          
+--- | --- | --- | ---                                            
+... | ... | ... | ...                         
+
+to:
+
+*TIMESTAMP* | OBJECT | STATE | HABITANT          
+--- | --- | --- | ---                                            
+... | ... | ... | ...           
+
 
 - Download and install all the required modules
 
