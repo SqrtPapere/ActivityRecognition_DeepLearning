@@ -23,16 +23,16 @@ to:
 
 - Set parameters:
 
- 	- window: is the length in seconds of the desired segmentation (values too small won't work because of the architecture of the network!)
+ 	- *window*: is the length in seconds of the desired segmentation (some values won't work because of the architecture of the network!)
 
-	- For the first run we need to create the labelled version of the data (takes a while):
+	- For the first run we need to create the **labelled version of the data** (*takes a while!*):
+		- in multi_input_lstm.py make sure the call to *get_dataset* has **True** arguments:
+		
+		`data, label, sensors = dataset.get_dataset(directory, window, True, True)`
+
+        - From now on we can set the first Boolean argument to False:
 	
-	- in multi_input_lstm.py make sure the call to get_dataset has True arguments:
- data, label, sensors = dataset.get_dataset(directory, window, True, True)
-
-        From now on we can set the first Boolean argument to False
-
-         data, label, sensors = dataset.get_dataset(directory, window, False, True)
+		`data, label, sensors = dataset.get_dataset(directory, window, False, True)`
 
 Each directory is for a different technique explained by the name.
 
