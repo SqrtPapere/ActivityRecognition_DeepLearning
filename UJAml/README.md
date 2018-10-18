@@ -8,15 +8,15 @@
 
 - There is an error in a header, so: open file at Data&rarr;Training&rarr;2017-11-20&rarr;2017-11-20-C&rarr;**2017-11-20-C-sensors.csv** with any text editor and change the header:
 
- *DATE* | OBJECT | STATE | HABITANT          
---- | --- | --- | ---                                            
-... | ... | ... | ...                         
+	 *DATE* | OBJECT | STATE | HABITANT          
+	--- | --- | --- | ---                                            
+	... | ... | ... | ...                         
 
-to:
+	to:
 
-*TIMESTAMP* | OBJECT | STATE | HABITANT          
---- | --- | --- | ---                                            
-... | ... | ... | ...           
+	*TIMESTAMP* | OBJECT | STATE | HABITANT          
+	--- | --- | --- | ---                                            
+	... | ... | ... | ...           
 
 
 - Download and install all the required modules
@@ -28,13 +28,13 @@ to:
 	- For the first run we need to create the **labelled version of the data** (*takes a while!*):
 		- in multi_input_lstm.py make sure the call to *get_dataset* has **True** arguments:
 		
-		`data, label, sensors = dataset.get_dataset(directory, window, True, True)`
+		`data, label, sensors = dataset.get_dataset(directory, window, False, True)`
 
         - From now on we can set the second Boolean argument to False:
 	
 		`data, label, sensors = dataset.get_dataset(directory, window, False, False)`
-
-	- We can set the first Boolean argument to True, if we already did a segmentation with the same *window* parameter:
+		
+		- We can set the first Boolean argument to True, if we already did a segmentation with the same *window* parameter:
 	
 		`data, label, sensors = dataset.get_dataset(directory, window, True, False)`
 
