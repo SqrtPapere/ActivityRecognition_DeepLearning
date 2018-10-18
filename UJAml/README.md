@@ -4,9 +4,9 @@
 
 - Download the dataset at http://ceatic.ujaen.es/ujami/sites/default/files/2018-07/UCAmI%20Cup.zip
 
-- Unzip and copy UCAml Cup &rarr; **Data** in **UJAml** folder of the repo
+- Unzip and copy UCAml Cup&rarr;**Data** in **UJAml** folder of the repo
 
-- There is an error in a header, so: open file at Data&rarr;Training->2017-11-20->2017-11-20-C->**2017-11-20-C-sensors.csv** with any text editor and change the header:
+- There is an error in a header, so: open file at Data&rarr;Training&rarr;2017-11-20&rarr;2017-11-20-C&rarr;**2017-11-20-C-sensors.csv** with any text editor and change the header:
 
  *DATE* | OBJECT | STATE | HABITANT          
 --- | --- | --- | ---                                            
