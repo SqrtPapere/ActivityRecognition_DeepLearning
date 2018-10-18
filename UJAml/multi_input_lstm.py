@@ -118,7 +118,7 @@ def translate(text, conversion_dict, before=None):
 # remember to change header in 2017-11-20-C-sensors.csv DATE->TIMESTAMP
 directory = 'Data/Training/'
 
-window = 5
+window = 28
 accel_fc = 50
 
 data, label, sensors = dataset.get_dataset(directory, window, True, False)
