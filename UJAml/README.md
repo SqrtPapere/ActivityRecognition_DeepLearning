@@ -1,4 +1,29 @@
 # Code for UJAml dataset
 
+## To run the code
+
+- Download the dataset at http://ceatic.ujaen.es/ujami/sites/default/files/2018-07/UCAmI%20Cup.zip
+
+- Unzip and copy UCAml Cup -> Data in the UJAml folder of the repo
+
+- Open file at Data->Training->2017-11-20->2017-11-20-C->2017-11-20-C-sensors.csv with any text editor and change the header:
+ 
+   DATE->TIMESTAMP
+
+- Download and install all the required modules
+
+- Set parameters:
+
+ 	- window: is the length in seconds of the desired segmentation (values too small won't work because of the architecture of the network!)
+
+	- For the first run we need to create the labelled version of the data (takes a while):
+	
+	- in multi_input_lstm.py make sure the call to get_dataset has True arguments:
+ data, label, sensors = dataset.get_dataset(directory, window, True, True)
+
+        From now on we can set the first Boolean argument to False
+
+         data, label, sensors = dataset.get_dataset(directory, window, False, True)
+
 Each directory is for a different technique explained by the name.
 

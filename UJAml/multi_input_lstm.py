@@ -6,7 +6,7 @@ import dataset #script for dataset management
 
 from keras.utils import to_categorical
 #from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
-from keras.layers import Embedding, Conv1D, Conv2D, MaxPooling1D, MaxPooling2D, Flatten, Dense, Input, GlobalMaxPooling1D, Dropout, Merge, BatchNormalization, concatenate, LSTM, Activation
+from keras.layers import Embedding, Conv1D, Conv2D, MaxPooling1D, MaxPooling2D, Flatten, Dense, Input, GlobalMaxPooling1D, Dropout, BatchNormalization, concatenate, LSTM, Activation
 from keras.models import Model
 from keras import optimizers
 from sklearn.model_selection import train_test_split
@@ -16,10 +16,10 @@ from keras import backend as K
 
 from keras.utils import plot_model
 
-import cv2
+#import cv2
 
 import re
-import imageio
+#import imageio
 
 from sklearn.metrics import f1_score
 
@@ -28,12 +28,17 @@ import tensorflow as tf
 tf.logging.set_verbosity(tf.logging.ERROR)
 
 def save_sensor_images(train_sensor, trainY):
+    """Saves the activity images in png.
+    Stores resized activity images in a folder for each label.
+    Requires OpenCV
+    Args:
+        train_sensor: An array with elements of dimension (height, width)
+        trainY: An array with the labels of the samples in train_sensor
+    """
     count = 1
+    start = 'images_from_sensors/'
 
     for img, lbl in zip(train_sensor, trainY):
-
-        start = '/Users/francescopegoraro/Google Drive/MasterThesis/images_from_sensors/'
-
         if not os.path.exists(start+str(lbl)):
             os.makedirs(start+str(lbl))
         height, width = img.shape[:2]
@@ -43,6 +48,12 @@ def save_sensor_images(train_sensor, trainY):
 
 
 def plotting(history):
+    """Saves accuracy and loss plots using the output of model.fit.
+
+    Args:
+        history: output of model.fit()
+
+    """
     plt.style.use("ggplot")
     plt.plot(history.history['acc'])
     plt.plot(history.history['val_acc'])
@@ -50,18 +61,25 @@ def plotting(history):
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
-    plt.show()
+    plt.savefig("accuracy.png")
     # summarize history for loss
+    plt.clf()
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
     plt.title('model loss')
     plt.ylabel('loss')
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
-    plt.show()
+    plt.savefig("loss.png")
 
 
 def plot_image_from_df(img_np, title = 'noTitle'):
+    """Plots the activity images.
+    Stores resized activity images in a folder for each label.
+    Args:
+        img_np: Numpy array 
+        title: The title of the figure to be plotted
+    """
     height, width = img_np.shape[:2]
     res = cv2.resize(img_np,(8*width, 8*height), interpolation = cv2.INTER_NEAREST)
     for i in range(0,res.shape[0], 8):
@@ -77,7 +95,13 @@ def plot_image_from_df(img_np, title = 'noTitle'):
         cv2.destroyAllWindows()
 
 def translate(text, conversion_dict, before=None):
-
+    """Utility that converts a string using a dictionary as mapping
+    Stores resized activity images in a folder for each label.
+    Used here to convert label set with missing values to range(0, num_classes).
+    Args:
+        text: The string that should be converted
+        conversion_dict: the dict object used as mapping
+    """
     # if empty:
     if not text: return float(text)
     # preliminary transformation:
@@ -86,21 +110,33 @@ def translate(text, conversion_dict, before=None):
     for key, value in conversion_dict.items():
         t = t.replace(key, value)
     return float(t)
-    
-label_renamer = {'12':'11', '15':'12', '16':'13','17':'14', '18':'15','19':'16', '20':'17', '21':'18','22':'19', '23':'20','24':'21'}
 
-directory = '/Users/francescopegoraro/Google Drive/MasterThesis/DataMulti/Training/'
 
-window = 28
+
+#label_renamer = {'12':'11', '15':'12', '16':'13','17':'14', '18':'15','19':'16', '20':'17', '21':'18','22':'19', '23':'20','24':'21'}
+
+# remember to change header in 2017-11-20-C-sensors.csv DATE->TIMESTAMP
+directory = 'Data/Training/'
+
+window = 5
 accel_fc = 50
 
-data, label, sensors = dataset.get_dataset(directory, window, True)
+data, label, sensors = dataset.get_dataset(directory, window, True, False)
+
+label_renamer = dict()
+unique_lab = np.unique(label)
+print(unique_lab)
+for i, k in enumerate(unique_lab):
+    label_renamer[str(k)]=str(i)
 
 
-print(len(label))
-#classes = 25
+print('\nConversion of labels using map: ')
+print(label_renamer)
+#new_label = [translate(str(elem), label_renamer) for elem in label]
+label = [float(label_renamer[str(elem)]) for elem in label]
+
 print(np.unique(label))
-label = [translate(str(elem), label_renamer) for elem in label]
+
 
 
 classes = len(np.unique(label))
@@ -109,6 +145,7 @@ classes = len(np.unique(label))
 print('unique labels:')
 print(len(np.unique(label)))
 print(np.unique(label))
+
 (trainX, testX, trainY, testY) = train_test_split(data, label, test_size=0.25, random_state=37)
 
 print(trainX[0][2])
@@ -124,7 +161,6 @@ test_times = np.array([[np.sin(2*np.pi*x[2]/24), np.cos(2*np.pi*x[2]/24)] for x 
 test_proximity = np.array([x[3] for x in testX], dtype="float")
 
 # test_proximity = np.array([x[2] for x in testX], dtype="float")
-
 
 
 trainY = to_categorical(trainY)
@@ -178,7 +214,8 @@ prox_out = (prox_input)
 time_out = (time_input)
 
 x = LSTM(50)(sensor_input)
- 
+x = BatchNormalization()(x)
+
 # x = Conv1D(25, 5, padding="valid", activation='relu')(sensor_input)
 # x = MaxPooling1D(pool_size=2)(x)
 # #x = Dropout(0.3)(x)
@@ -192,12 +229,13 @@ sensor_out = (x)
 
 # y = LSTM(125)(y)
 
-y = Conv1D(64, 30, padding="same", activation='relu')(accelerometer_input)
+y = Conv1D(64, 10, padding="same", activation='relu')(accelerometer_input)
 
-y = MaxPooling1D(pool_size=20, strides=20)(y)
-y = Conv1D(64, 15, padding="valid", activation='relu')(y)
-y = MaxPooling1D(pool_size=20, strides=20)(y)
-
+y = MaxPooling1D(pool_size=20, strides=10)(y)
+y = Conv1D(64, 10, padding="valid", activation='relu')(y)
+y = MaxPooling1D(pool_size=10, strides=10)(y)
+y = Conv1D(30, 1, activation='relu')(y)
+#y = MaxPooling1D(pool_size=10)(y)
 y = Dropout(0.3)(y)
 # y = Conv1D(30, 10, activation='relu')(y)
 # y = MaxPooling1D(pool_size=20)(y)
@@ -237,9 +275,12 @@ print(c)
 y_pred = model.predict({'accelerometer_input': test_accelerometer, 'sensor_input': test_sensor, 'time_input': test_times, 'prox_input': test_proximity})
 
 y_pred = np.argmax(y_pred,axis=1)
-print(f1_score(testY_true, y_pred, average='macro'))
-print(f1_score(testY_true, y_pred, average='micro'))
-print(f1_score(testY_true, y_pred, average='weighted'))
+
+print('\nF1-SCORE BOARD: ')
+print('macro: '+str(f1_score(testY_true, y_pred, average='macro')))
+print('micro: '+str(f1_score(testY_true, y_pred, average='micro')))
+print('weighted: '+str(f1_score(testY_true, y_pred, average='weighted')))
+print('None: ')
 print(f1_score(testY_true, y_pred, average=None))
 
 # model.save('my_model3.h5')

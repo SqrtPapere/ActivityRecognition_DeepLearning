@@ -5,7 +5,7 @@ from scipy import stats
 import os
 from pandas.api.types import is_string_dtype
 from datetime import date, time, datetime
-import cv2
+#import cv2
 import re
 import pickle
 
@@ -52,6 +52,47 @@ def feature_normalize(dataset):
         tris[0]['Z'] = (tris[0]['Z'] - mu_z)/sigma_z
     return dataset
 
+def label_data(file_path_data, file_path_label):
+    data = pd.read_csv(file_path_data, sep=';', parse_dates=['TIMESTAMP'])
+    label = pd.read_csv(file_path_label, sep=';', parse_dates=['DATE BEGIN', 'DATE END'])
+    data['ACTIVITY'] = '0'
+    for index, row in data.iterrows():
+        print(index)
+        for ind, activity_row in label.iterrows():
+            if activity_row['DATE BEGIN'] < row['TIMESTAMP'] < activity_row['DATE END']:
+                data.loc[index,'ACTIVITY'] = activity_row['ACTIVITY']
+                break
+    data['ACTIVITY'] = data['ACTIVITY'].str.replace('Act0','')
+    data['ACTIVITY'] = data['ACTIVITY'].str.replace('Act','')
+    #reduce similar classes
+    # data['ACTIVITY'] = data['ACTIVITY'].str.replace(r'\b2\b','4')
+    # data['ACTIVITY'] = data['ACTIVITY'].str.replace(r'\b3\b','4')
+    # data['ACTIVITY'] = data['ACTIVITY'].str.replace(r'\b6\b','7')
+    # data['ACTIVITY'] = data['ACTIVITY'].str.replace(r'\b5\b','7')
+
+    new_name = file_path_data[:-4]+'-Labelled.csv'
+
+    data.to_csv(new_name, index=False)
+
+def create_labelled(folder):
+    for name in os.listdir(folder):
+        path = os.path.join(folder, name)
+        
+        if os.path.isfile(path):
+            if 'sensors.' in path:
+                label_file = path.replace('sensors','activity')
+                sensor_data = label_data(path, label_file)
+                print(path)
+                accelerometer_file = path.replace('sensors','acceleration')
+                print(accelerometer_file)
+
+                accelerometer_data = label_data(accelerometer_file, label_file)
+                proximity_file = path.replace('sensors','proximity')
+                print(proximity_file)
+
+                proximity_data = label_data(proximity_file, label_file)
+        else:
+                create_labelled(path)
 
 
 def read_data(file_path_data):
@@ -64,11 +105,13 @@ def scan_dir(folder, df_list):
         path = os.path.join(folder, name)
 
         if os.path.isfile(path):
-            if 'sensor.csvLabelled' in path:
+
+            if 'sensors-Labelled' in path:
+                print('\nReading files in:'+ str(path))
                 sensor_data = read_data(path)
-                accelerometer_file = path.replace('sensor','acceleration')
+                accelerometer_file = path.replace('sensors','acceleration')
                 accelerometer_data = read_data(accelerometer_file)
-                proximity_file = path.replace('sensor','proximity')
+                proximity_file = path.replace('sensors','proximity')
                 proximity_data = read_data(proximity_file)
                 df_list.append([accelerometer_data, sensor_data, proximity_data])
                 break
@@ -228,21 +271,17 @@ def segment_accelerometer_signal(accelerometer_data, window_size_seconds): #give
 
 def segment_proximity_signal(proximity_data, window_size_seconds, proximity_names): 
 
-    #window_length = int(calculate_fc(accelerometer_data)*window_size_seconds)
     window_length = int(0.25*window_size_seconds)
     segments = []
-    #segments = np.empty((0,1,proximity_names))
     labels = np.empty((0))
     for (start, end) in windows(proximity_data.shape[0], window_length):
 
-        #window = elem[:,start:end]
         temp_df = proximity_data.loc[[proximity_data[:][start:end]['RSSI'].idxmax()]]
         df = pd.DataFrame(0, index=[0], columns=proximity_names)
         df[temp_df['OBJECT']] = 1
 
         if(len(proximity_data["TIMESTAMP"][start:end]) == window_length):
             l = [stats.mode(proximity_data["ACTIVITY"][start:end])[0][0]]
-            #segments = np.vstack([segments,np.dstack(df.values)])
             segments.append(np.squeeze(df.values))
             labels = np.append(labels,l)
 
@@ -255,14 +294,13 @@ def window_signals(list_of_tris, window_in_sec, sensor_list):
     labels_sens = np.empty((0))
     labels_prox = np.empty((0))
 
-    proximity_name_path = '/Users/francescopegoraro/Google Drive/MasterThesis/sensor_to_image/info/proximity_sensors.txt'
+    proximity_name_path = 'info/proximity_sensors.txt'
 
     proximity_list = get_sensors_names(proximity_name_path)
 
     for tris in list_of_tris:
 
         sensors, sens_lab = segment_sensor_signal(tris[1], window_in_sec, sensor_list)
-
 
         accelerometer, accel_lab, hour = segment_accelerometer_signal(tris[0], window_in_sec)
 
@@ -332,31 +370,38 @@ def align_sources(list_of_tris): #given a list of tris, truncate them at the sam
 
     return list_of_tris
 
-def get_dataset(directory, window_size_seconds, just_read):
+def load_dataset(filename_path):
+    print(filename_path)
+    loaded = np.load(filename_path)
 
-    start = '/Users/francescopegoraro/Google Drive/MasterThesis/DataAligned/'
+    return loaded['windowed_data'], loaded['labels'], loaded['sensors']
+
+def get_dataset(directory, window_size_seconds, just_read, not_labelled):
+
+    start = 'DataAligned/'
+    if not os.path.exists(start):
+        os.makedirs(start)
+        
     if just_read:
-        with open(start+'windowed_data.pkl', 'rb') as f:
-            windowed_data = pickle.load(f)
-        with open(start+'labels.pkl', 'rb') as f:
-            labels = pickle.load(f)
-        with open(start+'sensors.pkl', 'rb') as f:
-            sensors = pickle.load(f)
-
+        load_from = start+str(window_size_seconds)+'_seconds.npz'
+        windowed_data, labels, sensors = load_dataset(load_from)
 
     else:
 
-        sensor_name_path = '/Users/francescopegoraro/Google Drive/MasterThesis/sensor_to_image/info/sensors.txt'
+        sensor_name_path = 'info/sensors.txt'
         #proximity_name_path = '/Users/francescopegoraro/Dropbox/MasterThesis/sensor_to_image/info/sensors.txt'
 
         dfs = []
+
+        if not_labelled:
+            create_labelled(directory)
+
         scan_dir(directory, dfs)
 
         sensors = get_sensors_names(sensor_name_path)
 
         print('aligning sources... ')
         dfs = align_sources(dfs)
-
 
         print('normalizing features... ')
         dfs = feature_normalize(dfs)
@@ -368,14 +413,8 @@ def get_dataset(directory, window_size_seconds, just_read):
 
         print('numero finestre: ' +str(len(windowed_data)))
 
-
-        with open(start+'windowed_data.pkl', 'wb') as f:
-            pickle.dump(windowed_data, f)
-        with open(start+'labels.pkl', 'wb') as f:
-            pickle.dump(labels, f)
-        with open(start+'sensors.pkl', 'wb') as f:
-            pickle.dump(sensors, f)
-
+        save_to = start+str(window_size_seconds)+'_seconds'
+        np.savez(save_to, windowed_data=windowed_data, labels=labels, sensors=sensors)
 
 
     return windowed_data, labels, len(sensors)
