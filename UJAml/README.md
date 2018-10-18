@@ -30,9 +30,11 @@ to:
 		
 		`data, label, sensors = dataset.get_dataset(directory, window, True, True)`
 
-        - From now on we can set the first Boolean argument to False:
+        - From now on we can set the second Boolean argument to False:
 	
-		`data, label, sensors = dataset.get_dataset(directory, window, False, True)`
+		`data, label, sensors = dataset.get_dataset(directory, window, False, False)`
 
-Each directory is for a different technique explained by the name.
+	- We can set the first Boolean argument to True, if we already did a segmentation with the same *window* parameter:
+	
+		`data, label, sensors = dataset.get_dataset(directory, window, True, False)`
 
