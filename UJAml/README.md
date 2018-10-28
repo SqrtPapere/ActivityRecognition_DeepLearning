@@ -1,6 +1,6 @@
 # Code for UJAml dataset
 
-## To run the code
+## To run the code (training and testing)
 
 - Download the dataset at http://ceatic.ujaen.es/ujami/sites/default/files/2018-07/UCAmI%20Cup.zip
 
