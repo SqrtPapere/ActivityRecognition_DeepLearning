@@ -26,7 +26,7 @@
  	- *window*: is the length in seconds of the desired segmentation (some values won't work because of the architecture of the network!)
 
 	- For the first run we need to create the **labelled version of the data** (*takes a while!*):
-		- in multi_input_lstm.py make sure the call to *get_dataset* has **True** arguments:
+		- in multi_input_lstm(...).py make sure the call to *get_dataset* has **True** arguments:
 		
 		`data, label, sensors = dataset.get_dataset(directory, window, False, True)`
 
@@ -38,4 +38,4 @@
 	
 		`data, label, sensors = dataset.get_dataset(directory, window, True, False)`
 
-- To run the code: `python3 multi_input_lstm.py`
+- To run the code: `python3 multi_input_lstm(...).py`
