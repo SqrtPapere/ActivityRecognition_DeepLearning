@@ -7,7 +7,7 @@ Activity recognition systems deployed in smart homes are characterized by their 
 
 We propose a novel framework for activity Learning able to extract features from multiple types of sensors located in a sensor-rich environment and make a prediction based on their output.
 
-![](https://github.com/SqrtPapere/ActivityRecognition_DeepLearning/blob/master/readme_images/presentation/home.png | width=100)
+![](https://github.com/SqrtPapere/ActivityRecognition_DeepLearning/blob/master/readme_images/presentation/home.png?s=200)
 
  Both CNN and LSTM architectures will be used in a multi-input manner to enhance the classification accuracy making use of all the data sources. 
  
