@@ -329,6 +329,7 @@ def load_dataset(filename_path):
     print(filename_path)
     loaded = np.load(filename_path)
 
+
     return loaded['windowed_data'], loaded['labels'], loaded['sensors']
 
 def get_testset(directory, window_size_seconds):

@@ -2,7 +2,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats
+
+
 import os
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
 from pandas.api.types import is_string_dtype
 from datetime import date, time, datetime
 #import cv2

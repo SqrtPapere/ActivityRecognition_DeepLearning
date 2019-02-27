@@ -30,6 +30,7 @@ import copy
 import tensorflow as tf
 tf.logging.set_verbosity(tf.logging.ERROR)
 
+import pickle
 
 
 #from pathlib import Path
@@ -155,6 +156,7 @@ def create_model(window, classes):
     prox_input = Input(shape=proxShape, dtype='float', name='prox_input')
     pressure_input = Input(shape=pressureShape, dtype='float', name='pressure_input')
 
+    #d = Dense(100, activation='relu')(time_input)
     time_out = BatchNormalization()(time_input)
 
     k = Conv2D(8, (2, 2), activation='relu', padding='same')(pressure_input)
@@ -164,6 +166,7 @@ def create_model(window, classes):
     k = BatchNormalization()(k)
     pressure_out = (k)
 
+    #y = Dense(100, activation='relu')(prox_input)
     y = BatchNormalization()(prox_input)
     prox_out = (y)
 
@@ -256,7 +259,7 @@ if not test_beast:
         print('\nTraining...')
 
         history = model.fit([train_accel, train_sensor, train_times, train_prox, train_press], trainY, \
-            epochs=10, batch_size=64, verbose=0)
+            epochs=10, batch_size=64, verbose=1)
         
         print('\nSaving model')
         model.save(model_name)
@@ -327,10 +330,8 @@ else:
                     matrix_prediction.append(np.mean(portion, axis=0))
                 
             matrix_prediction = np.array(matrix_prediction)
-
-
-            pred = np.argmax(matrix_prediction, axis=1)
-            pred = np.array([i+1 for i in pred])
+            
+            pred = np.array([i+1 for i in np.argmax(matrix_prediction, axis=1)])
             for el, (true1, true2) in zip(pred, label_test[key]):
                 t+=1
                 converted = utils.convert_dict[str(el)]  # for ex. converts 4 in Act4
@@ -349,6 +350,7 @@ else:
     tp = 0
     total = 0
     for key, value in predictions.items():
+        result = []
 
         predictions[key] /= len(windows)
         probabilities = predictions[key]
@@ -370,8 +372,16 @@ else:
                 partial_tp +=1
                 tp+=1
                 y_true.append(el)
+                result.append([el, el])
+
+
             else:
                 y_true.append(int(inv_convert_dict[true1]))
+                result.append([el, int(inv_convert_dict[true1])])
+
+        with open("result_test/result_"+str(key)+".txt", "wb") as fp:
+            pickle.dump(result, fp)
+
             # elif str(true1)=='Act12' and converted in ['Act09', 'Act11']:
             #     partial_tp +=1
             #     tp+=1
